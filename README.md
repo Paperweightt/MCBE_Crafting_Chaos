@@ -1,3 +1,7 @@
+## BTW
+
+for anyone reading this, i got really lazy on the typings for this so be warned
+
 ## build instructions
 
 #### setup
