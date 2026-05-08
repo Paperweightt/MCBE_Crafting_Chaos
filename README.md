@@ -1,6 +1,8 @@
-## BTW
+#### BTW
 
 for anyone reading this, i got really lazy on the typings for this so be warned
+
+Crafting Chaos or Recipe Chaos, whatever name, randomizes the recipes in the game
 
 ## build instructions
 
@@ -14,6 +16,7 @@ for anyone reading this, i got really lazy on the typings for this so be warned
 #### build
 
 ```powershell
+  npm run generate
   npm run local-deploy
 ```
 
@@ -28,3 +31,10 @@ for anyone reading this, i got really lazy on the typings for this so be warned
 ```powershell
    npm run mcaddon
 ```
+
+## Currently Unsupported Recipes
+
+- tipped arrows
+- armor trims
+- beds
+- bundles?
