@@ -1,4 +1,57 @@
-import { JavaRecipe, Recipe } from "./get_recipes";
+import { Recipe } from "./get_recipes";
+
+const potionIdtoName = [
+  "water",
+  "mundane",
+  "long mundane",
+  "Thick",
+  "Awkward",
+  "nightvision",
+  "long_nightvision",
+  "invisibility",
+  "long_invisibility",
+  "leaping",
+  "long_leaping",
+  "strong_leaping",
+  "fire_resistance",
+  "long_fire_resistance",
+  "swiftness",
+  "long_swiftness",
+  "strong_swiftness",
+  "slowness",
+  "long_slowness",
+  "strong_slowness",
+  "water_breathing",
+  "long_water_breathing",
+  "healing",
+  "strong_healing",
+  "harming",
+  "strong_harming",
+  "poison",
+  "long_poison",
+  "strong_poison",
+  "regeneration",
+  "long_regeneration",
+  "strong_regeneration",
+  "strength",
+  "long_strength",
+  "strong_strength",
+  "weakness",
+  "long_weakness",
+  "decay",
+  "turtle_master",
+  "long_turtle_master",
+  "strong_turtle_master",
+  "slow_falling",
+  "long_slow_falling",
+  "slowness",
+  "wind_charged",
+  "weaving",
+  "oozing",
+  "infested",
+];
+
+const potionNameToId = Object.fromEntries(Object.entries(potionIdtoName).map((arr) => arr.reverse()));
 
 const dataValues = {
   "minecraft:bamboo_planks": { 4: "minecraft:bamboo_planks" },
@@ -133,12 +186,22 @@ export type RecipeInside = {
     identifier: string;
   };
   tags: string[];
+  output?: string;
   result: {
     item: string;
     data?: number;
     count?: number;
   };
 };
+
+type RecipeTypes =
+  | "minecraft:recipe_shaped"
+  | "minecraft:recipe_shapeless"
+  | "minecraft:recipe_smithing_transform"
+  | "minecraft:recipe_smithing_trim"
+  | "minecraft:recipe_brewing_container"
+  | "minecraft:recipe_brewing_mix"
+  | "minecraft:recipe_furnace";
 
 export function formatItem(itemData: RecipeItem) {
   if (!itemData.item.startsWith("minecraft:")) {
@@ -156,8 +219,75 @@ export function formatItem(itemData: RecipeItem) {
   return itemData;
 }
 
-export function getData(recipe: Recipe): RecipeInside | undefined {
-  for (const [key, value] of Object.entries(recipe)) {
-    if (key !== "format_version") return value;
+export function getOutput(recipe: Recipe): RecipeItem[] | RecipeItem | undefined {
+  const type = getType(recipe);
+  const data = getData(recipe);
+
+  if (!data) return;
+
+  if (type === "minecraft:recipe_smithing_trim") return;
+  if (type === "minecraft:recipe_brewing_container") {
+    if (!data.output) return;
+    return { item: data.output };
   }
+  if (type === "minecraft:recipe_brewing_mix") {
+    if (!data.output) return;
+    const [prefix, type, name] = data.output.split(":");
+    const dataValue = potionNameToId[name];
+
+    if (!name) throw new Error(data.output.split(":")[2] + " " + JSON.stringify(data));
+
+    return {
+      item: prefix + ":" + type.split("_")[0],
+      data: dataValue,
+    };
+  }
+  if (type === "minecraft:recipe_furnace") {
+    if (!data.output) return;
+    return { item: data.output };
+  }
+
+  if (Array.isArray(data.result)) {
+    const newArr: { item: string; data?: number; amount?: number }[] = [];
+    for (const value of data.result) {
+      const data = { ...value };
+      newArr.push(data);
+    }
+    return newArr;
+  }
+
+  return { ...data.result };
+}
+
+export function setOutput(recipe: Recipe, output: RecipeItem): boolean {
+  const type = getType(recipe);
+  const data = getData(recipe);
+
+  if (!data) return false;
+
+  if (type === "minecraft:recipe_smithing_trim") return false;
+  if (type === "minecraft:recipe_furnace") {
+    let value = output.item;
+
+    if (output.data) value += ":" + output.data;
+
+    data.output = value;
+
+    return true;
+  }
+
+  data.result = output;
+
+  return true;
+}
+
+export function getType(recipe: Recipe): RecipeTypes | undefined {
+  for (const key of Object.keys(recipe)) {
+    if (key !== "format_version") return key as RecipeTypes;
+  }
+}
+
+export function getData(recipe: Recipe): RecipeInside | undefined {
+  const key = getType(recipe);
+  if (key) return recipe[key];
 }

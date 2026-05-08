@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
 import path from "node:path";
+import { execSync } from "child_process";
 
 type ShaplessRecipe = {
   format_version: string;
@@ -13,11 +14,17 @@ type ShaplessRecipe = {
       item: string;
       data?: number;
     }[];
-    result: {
-      item: string;
-      data?: number;
-      count?: number;
-    };
+    result:
+      | {
+          item: string;
+          data?: number;
+          count?: number;
+        }
+      | {
+          item: string;
+          data?: number;
+          count?: number;
+        }[];
   };
 };
 
@@ -37,11 +44,17 @@ type ShapedRecipe = {
         data?: number;
       }
     >;
-    result: {
-      item: string;
-      count?: number;
-      data?: number;
-    };
+    result:
+      | {
+          item: string;
+          data?: number;
+          count?: number;
+        }
+      | {
+          item: string;
+          data?: number;
+          count?: number;
+        }[];
   };
 };
 
@@ -52,16 +65,43 @@ const config = {
 };
 
 async function cacheBedrockRecipes(): Promise<void> {
-  // https://github.com/Mojang/bedrock-samples/tree/main/behavior_pack/recipes
-  //
-  // git clone --depth 1 --filter=blob:none --sparse https://github.com/Mojang/bedrock-samples.git
-  // cd bedrock-samples
-  // git sparse-checkout set behavior_pack/recipes
-  //
-  // mkdir recipes
-  // mv "./bedrock-samples/behavior_pack/recipes" "./"
-  //
-  // rm "bedrock-samples" -r -f
+  const repoDir = path.resolve(__dirname, "../generated/bedrock-samples");
+  const recipesDir = path.resolve(__dirname, "../generated/recipes");
+
+  // Clone sparse repository
+  execSync(
+    ["git clone", "--depth 1", "--filter=blob:none", "--sparse", "https://github.com/Mojang/bedrock-samples.git"].join(
+      " "
+    ),
+    { stdio: "inherit" }
+  );
+
+  // Sparse checkout only recipes
+  execSync("git sparse-checkout set behavior_pack/recipes", {
+    cwd: repoDir,
+    stdio: "inherit",
+  });
+
+  const sourceRecipes = path.join(repoDir, "behavior_pack", "recipes");
+
+  // Remove existing recipes dir if present
+  if (fs.existsSync(recipesDir)) {
+    fs.rmSync(recipesDir, {
+      recursive: true,
+      force: true,
+    });
+  }
+
+  // Move recipes out
+  fs.renameSync(sourceRecipes, recipesDir);
+
+  // Cleanup repo
+  fs.rmSync(repoDir, {
+    recursive: true,
+    force: true,
+  });
+
+  console.log("Downloaded vanilla recipes.");
 }
 
 export async function getRecipes(): Promise<{ filePath: string; recipe: Recipe }[]> {

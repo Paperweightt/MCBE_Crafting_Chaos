@@ -1,19 +1,43 @@
 import * as fs from "node:fs";
+import seedrandom from "seedrandom";
 import path from "node:path";
 
-import { getRecipes } from "./get_recipes.ts";
-import { RecipeItem, getData } from "./format_recipe.ts";
+import { getRecipes, Recipe } from "./get_recipes.ts";
+import { RecipeItem, getData, getOutput, getType, setOutput } from "./format_recipe.ts";
 
+const rng = seedrandom("123");
 const config = {
   outputDir: "./behavior_packs/Recipe_Chaos/recipes/generated/",
 };
 
-async function createRecipes() {
-  const recipes = await getRecipes();
-  const outputs: RecipeItem[] = [];
+// Source - https://stackoverflow.com/a/9229821
+// Posted by georg, modified by community. See post 'Timeline' for change history
+// Retrieved 2026-05-08, License - CC BY-SA 4.0
 
-  function getRandomOutput(): RecipeItem {
-    const index = Math.floor(Math.random() * outputs.length);
+function uniqBy<T>(a: T[], key: (param0: T) => string | number): T[] {
+  var seen = {};
+  return a.filter(function (item) {
+    var k = key(item);
+    return seen.hasOwnProperty(k) ? false : (seen[k] = true);
+  });
+}
+
+async function createRecipes() {
+  let recipes = (await getRecipes()).filter(({ filePath, recipe }) => {
+    if (getType(recipe) === "minecraft:recipe_smithing_trim") return false;
+    if (getType(recipe) === "minecraft:recipe_smithing_transform") return false;
+    if (filePath.match(/[0-9]+\.json$/)) return false;
+    // if (path.basename(filePath).startsWith("reducer_")) return false;
+    return true;
+  });
+  const outputs: (RecipeItem | RecipeItem[])[] = [];
+
+  recipes = uniqBy<{ filePath: string; recipe: Recipe }>(recipes, ({ recipe }) => {
+    return getData(recipe)!.description.identifier;
+  });
+
+  function getRandomOutput(): RecipeItem | RecipeItem[] {
+    const index = Math.floor(rng() * outputs.length);
     const output = outputs[index];
 
     outputs.splice(index, 1);
@@ -21,30 +45,41 @@ async function createRecipes() {
     return output;
   }
 
-  for (const { recipe } of recipes) {
-    try {
-      const data = getData(recipe);
-      if (!data) throw new Error(`recipe without data: ${recipe}`);
+  for (const { filePath, recipe } of recipes) {
+    const output = getOutput(recipe);
 
-      const output: RecipeItem = { ...data.result };
+    console.log(filePath);
 
+    if (output) {
       outputs.push(output);
-    } catch (error) {
-      console.log(error);
-      console.log(recipe);
     }
   }
 
+  fs.rm(config.outputDir, { recursive: true, force: true }, (err) => {
+    if (err) throw err;
+    fs.mkdir(config.outputDir, { recursive: true }, (err) => {
+      if (err) throw err;
+      console.log("Folder emptied successfully");
+    });
+  });
+
   for (const { filePath, recipe } of recipes) {
-    const data = getData(recipe);
-
-    if (!data) throw new Error(`recipe without data: ${recipe}`);
-
-    data.result = getRandomOutput();
-
     const outputPath = path.join(config.outputDir, path.basename(filePath));
+    const type = getType(recipe);
+    const data = getData(recipe);
+    const output = getRandomOutput();
 
-    console.log(outputPath);
+    if (!data) continue;
+
+    console.log(filePath);
+
+    setOutput(recipe, output as RecipeItem);
+
+    if (type === "minecraft:recipe_shaped" || type === "minecraft:recipe_shapeless") {
+      // if (Object.keys(data.result).length > 20) {
+      //   console.log(filePath, data.result, output);
+      // }
+    }
 
     fs.writeFile(outputPath, JSON.stringify(recipe, null, "\t"), (err) => {
       if (err) console.log(err);
