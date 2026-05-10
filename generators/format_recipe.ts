@@ -266,7 +266,11 @@ export function setOutput(recipe: Recipe, output: RecipeItem): boolean {
   if (!data) return false;
 
   if (type === "minecraft:recipe_smithing_trim") return false;
-  if (type === "minecraft:recipe_furnace") {
+  if (
+    type === "minecraft:recipe_furnace" ||
+    type === "minecraft:recipe_brewing_container" ||
+    type === "minecraft:recipe_brewing_mix"
+  ) {
     let value = output.item;
 
     if (output.data) value += ":" + output.data;

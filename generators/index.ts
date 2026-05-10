@@ -27,6 +27,7 @@ async function createRecipes() {
     if (getType(recipe) === "minecraft:recipe_smithing_trim") return false;
     if (getType(recipe) === "minecraft:recipe_smithing_transform") return false;
     if (filePath.match(/[0-9]+\.json$/)) return false;
+    if (filePath.match(/deprecated\.json$/)) return false;
     // if (path.basename(filePath).startsWith("reducer_")) return false;
     return true;
   });
@@ -45,41 +46,33 @@ async function createRecipes() {
     return output;
   }
 
-  for (const { filePath, recipe } of recipes) {
+  for (const { recipe } of recipes) {
     const output = getOutput(recipe);
-
-    console.log(filePath);
 
     if (output) {
       outputs.push(output);
     }
   }
 
-  fs.rm(config.outputDir, { recursive: true, force: true }, (err) => {
-    if (err) throw err;
-    fs.mkdir(config.outputDir, { recursive: true }, (err) => {
-      if (err) throw err;
-      console.log("Folder emptied successfully");
-    });
-  });
+  console.log("recipes:", recipes.length);
+  console.log("outputs:", outputs.length);
+
+  // fs.rm(config.outputDir, { recursive: true, force: true }, (err) => {
+  //   if (err) throw err;
+  //   fs.mkdir(config.outputDir, { recursive: true }, (err) => {
+  //     if (err) throw err;
+  //     console.log("Folder emptied successfully");
+  //   });
+  // });
 
   for (const { filePath, recipe } of recipes) {
     const outputPath = path.join(config.outputDir, path.basename(filePath));
-    const type = getType(recipe);
     const data = getData(recipe);
     const output = getRandomOutput();
 
     if (!data) continue;
 
-    console.log(filePath);
-
     setOutput(recipe, output as RecipeItem);
-
-    if (type === "minecraft:recipe_shaped" || type === "minecraft:recipe_shapeless") {
-      // if (Object.keys(data.result).length > 20) {
-      //   console.log(filePath, data.result, output);
-      // }
-    }
 
     fs.writeFile(outputPath, JSON.stringify(recipe, null, "\t"), (err) => {
       if (err) console.log(err);
