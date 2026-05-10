@@ -12,7 +12,7 @@
       "description": "Script resources",
       "language": "javascript",
       "type": "script",
-      "uuid": "f9b11944-b8a3-41eb-81de-6eda952eed83",
+      "uuid": "c5cb4571-22b4-40fb-8a4e-5d0151ed8763",
       "version": [1, 0, 0],
       "entry": "scripts/main.js"
     }
