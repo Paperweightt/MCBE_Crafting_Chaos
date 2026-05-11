@@ -185,6 +185,7 @@ export type RecipeInside = {
   description: {
     identifier: string;
   };
+  priority?: number;
   tags: string[];
   output?: string;
   result: {

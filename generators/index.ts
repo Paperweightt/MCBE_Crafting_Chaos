@@ -46,6 +46,16 @@ async function createRecipes() {
     return output;
   }
 
+  // set priority levels
+  for (const { recipe } of recipes) {
+    const data = getData(recipe);
+
+    if (!data) continue;
+
+    if (!data.priority) data.priority = 0;
+    data.priority -= 10;
+  }
+
   for (const { recipe } of recipes) {
     const output = getOutput(recipe);
 
