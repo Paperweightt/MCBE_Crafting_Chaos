@@ -1,7 +1,7 @@
 {
   "format_version": 2,
   "header": {
-    "name": "Recipe Chaos",
+    "name": "Random Recipe Swap",
     "description": "by Origami Studios",
     "version": [1, 0, 0],
     "uuid": "fdb56728-0eff-4716-9420-0529f3d72155",
@@ -21,10 +21,6 @@
     {
       "module_name": "@minecraft/server",
       "version": "2.5.0"
-    },
-    {
-      "uuid": "db9abae0-0552-4c46-90f9-8484b6e18d2a",
-      "version": [1, 0, 0]
     }
   ]
 }
