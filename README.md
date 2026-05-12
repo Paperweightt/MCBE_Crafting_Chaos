@@ -2,7 +2,7 @@
 
 for anyone reading this, i got really lazy on the typings for this so be warned
 
-Crafting Chaos or Recipe Chaos, whatever name, randomizes the recipes in the game
+Random Recipe Swap randomizes the recipes in the game.
 
 ## build instructions
 
@@ -28,13 +28,12 @@ Crafting Chaos or Recipe Chaos, whatever name, randomizes the recipes in the gam
 
 #### compile
 
-```powershell
-   npm run mcaddon
-```
+currently manual
 
-## Currently Unsupported Recipes
+## Currently Unsupported Recipes (please help)
 
+- rockets
 - tipped arrows
-- armor trims
-- beds
-- bundles?
+- bed with dye
+- wool with dye
+- bundle with dye
