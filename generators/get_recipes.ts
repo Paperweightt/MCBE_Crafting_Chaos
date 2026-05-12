@@ -252,10 +252,5 @@ export async function getRecipes(): Promise<{ filePath: string; recipe: Recipe }
       return { filePath, recipe: JSON.parse(fileContent) };
     });
 
-  return [
-    ...files,
-    ...getBedRecipes(),
-    ...getWoolRecipes(),
-    // ...getApplyDyeOnBedRecipes()
-  ];
+  return [...files, ...getBedRecipes(), ...getWoolRecipes(), ...getApplyDyeOnBedRecipes()];
 }
