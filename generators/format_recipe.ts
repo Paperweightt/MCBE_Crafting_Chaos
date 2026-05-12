@@ -272,12 +272,19 @@ export function setOutput(recipe: Recipe, output: RecipeItem): boolean {
     type === "minecraft:recipe_brewing_container" ||
     type === "minecraft:recipe_brewing_mix"
   ) {
+    if (Array.isArray(output)) output = output[0];
+
     let value = output.item;
 
     if (output.data) value += ":" + output.data;
 
     data.output = value;
 
+    return true;
+  }
+
+  if (type === "minecraft:recipe_shapeless" && Array.isArray(output)) {
+    data.result = output[0];
     return true;
   }
 
